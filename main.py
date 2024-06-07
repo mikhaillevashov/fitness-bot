@@ -177,12 +177,6 @@ async def favorite_grain(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         f"Возраст: {user_data['age']}\n"
         f"Вес: {user_data['weight']} кг\n"
         f"Рост: {user_data['height']} см\n"
-        f"Любимое мясо: {user_data['favorite_meat']}\n"
-        f"Любимый фрукт: {user_data['favorite_fruit']}\n"
-        f"Любимый сыр: {user_data['favorite_cheese']}\n"
-        f"Любимый овощ: {user_data['favorite_vegetable']}\n"
-        f"Любимая специя: {user_data['favorite_spice']}\n"
-        f"Любимая крупа: {user_data['favorite_grain']}\n"
         'Вы можете изменить данные или узнать свои данные с помощью команд.',
         reply_markup=main_menu_keyboard()
     )
@@ -217,12 +211,6 @@ async def get_user_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         f"Возраст: {user_data.get('age', 'Не указан')}\n"
         f"Вес: {user_data.get('weight', 'Не указан')} кг\n"
         f"Рост: {user_data.get('height', 'Не указан')} см\n"
-        f"Любимое мясо: {user_data.get('favorite_meat', 'Не указано')}\n"
-        f"Любимый фрукт: {user_data.get('favorite_fruit', 'Не указан')}\n"
-        f"Любимый сыр: {user_data.get('favorite_cheese', 'Не указан')}\n"
-        f"Любимый овощ: {user_data.get('favorite_vegetable', 'Не указан')}\n"
-        f"Любимая специя: {user_data.get('favorite_spice', 'Не указана')}\n"
-        f"Любимая крупа: {user_data.get('favorite_grain', 'Не указана')}"
     )
     await update.message.reply_text(data, reply_markup=main_menu_keyboard())
 
