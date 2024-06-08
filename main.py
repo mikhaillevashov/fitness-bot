@@ -3,12 +3,12 @@ from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters, ConversationHandler
 
 # Токен бота
-TELEGRAM_TOKEN = 'token'
+TELEGRAM_TOKEN = '6812814419:AAFw8WzAQi5FI_beRlbR6OOeJPXT5i-Vfn4'
 
 # Определение состояний для ConversationHandler
 (GENDER, AGE, WEIGHT, HEIGHT, FAVORITE_MEAT, FAVORITE_FRUIT, FAVORITE_CHEESE, FAVORITE_VEGETABLE,
- FAVORITE_SPICE, FAVORITE_GRAIN, CHANGE_MENU, CHANGE_GENDER, CHANGE_AGE, CHANGE_WEIGHT,
- CHANGE_HEIGHT) = range(15)
+ FAVORITE_SPICE, FAVORITE_GRAIN, SUGGEST_FOOD, POLL_RESPONSE, CHANGE_MENU, CHANGE_GENDER, CHANGE_AGE, CHANGE_WEIGHT,
+ CHANGE_HEIGHT) = range(17)
 
 VALID_GENDERS = ['Мужской', 'Женский']
 VALID_MEATS = ['Свинина', 'Курица', 'Говядина', 'Рыба']
@@ -17,6 +17,7 @@ VALID_CHEESES = ['Чеддер', 'Козий сыр', 'Пармезан', 'Мо�
 VALID_VEGETABLES = ['Огурец', 'Помидор', 'Болгарский перец', 'Морковь']
 VALID_SPICES = ['Соль', 'Молотый перец', 'Тмин', 'Базилик']
 VALID_GRAINS = ['Рис', 'Греча', 'Макароны', 'Картошка']
+VALID_ANSWERS = ['Да', 'Нет']
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -68,6 +69,11 @@ def spice_keyboard():
 
 def grain_keyboard():
     keyboard = [VALID_GRAINS]
+    return ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
+
+
+def feedback_keyboard():
+    keyboard = [VALID_ANSWERS]
     return ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
 
 
@@ -185,9 +191,34 @@ async def favorite_grain(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 def main_menu_keyboard():
     keyboard = [
-        ['Изменить данные', 'Узнать свои данные']
+        ['Что мне поесть?', 'Узнать свои данные', 'Изменить данные']
     ]
     return ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
+
+
+async def suggest_food(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_data = context.user_data
+    favorite_meat = user_data.get('favorite_meat', 'мясо')
+    favorite_fruit = user_data.get('favorite_fruit', 'фрукт')
+    favorite_cheese = user_data.get('favorite_cheese', 'сыр')
+    favorite_vegetable = user_data.get('favorite_vegetable', 'овощ')
+    favorite_spice = user_data.get('favorite_spice', 'специю')
+    favorite_grain = user_data.get('favorite_grain', 'крупу')
+
+    suggestion = (f"Предлагаем вам попробовать блюдо с {favorite_meat}, {favorite_fruit}, {favorite_cheese}, "
+                  f"{favorite_vegetable}, приправленное {favorite_spice} и поданное с {favorite_grain}.")
+
+    await update.message.reply_text(suggestion, reply_markup=feedback_keyboard())
+    return POLL_RESPONSE
+
+
+async def poll_response(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    answer = update.message.text
+    if answer == "Да":
+        await update.message.reply_text("Рад, что вам понравилось!", reply_markup=main_menu_keyboard())
+    elif answer == "Нет":
+        await update.message.reply_text("Жаль, что вам не понравилось.", reply_markup=main_menu_keyboard())
+    return CHANGE_MENU
 
 
 def change_menu_keyboard():
@@ -269,6 +300,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await change_data(update, context)
     elif text == "Узнать свои данные":
         await get_user_data(update, context)
+    elif text == "Что мне поесть?":
+        await suggest_food(update, context)
+        return POLL_RESPONSE
     elif text == "Пол":
         await handle_change_gender(update, context)
         return CHANGE_GENDER
@@ -306,6 +340,8 @@ def main() -> None:
             FAVORITE_VEGETABLE: [MessageHandler(filters.TEXT & ~filters.COMMAND, favorite_vegetable)],
             FAVORITE_SPICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, favorite_spice)],
             FAVORITE_GRAIN: [MessageHandler(filters.TEXT & ~filters.COMMAND, favorite_grain)],
+            SUGGEST_FOOD: [MessageHandler(filters.TEXT & ~filters.COMMAND, suggest_food)],
+            POLL_RESPONSE: [MessageHandler(filters.TEXT & ~filters.COMMAND, poll_response)],
             CHANGE_MENU: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)],
             CHANGE_GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_change_gender)],
             CHANGE_AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_change_age)],
