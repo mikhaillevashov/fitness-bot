@@ -232,7 +232,7 @@ async def favorite_grain(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 def main_menu_keyboard():
     keyboard = [
-        ['Изменить данные', 'Узнать свои данные']
+        ['Что мне поесть?', 'Узнать свои данные', 'Изменить данные']
     ]
     return ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
 
