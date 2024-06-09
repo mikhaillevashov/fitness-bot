@@ -28,10 +28,12 @@ async def suggest_food(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     favorite_spice = user_data.get('favorite_spice', 'специю')
     favorite_grain = user_data.get('favorite_grain', 'крупу')
 
-    suggestion = (f"Предлагаем вам попробовать блюдо с {favorite_meat}, {favorite_fruit}, {favorite_cheese}, "
-                  f"{favorite_vegetable}, приправленное {favorite_spice} и поданное с {favorite_grain}.")
-
-    await update.message.reply_text(suggestion, reply_markup=feedback_keyboard())
+    chat_id = update.message.chat_id
+    url = f"http://127.0.0.1:5000/predict_meal/{chat_id}"
+    response = requests.get(url)
+    meal = response.json()
+    suggestion = (f"Предлагаем вам попробовать блюдо <b>{meal}</b> с парашой. ")
+    await update.message.reply_text(suggestion, reply_markup=feedback_keyboard(), parse_mode='HTML')
     return POLL_RESPONSE
 
 
