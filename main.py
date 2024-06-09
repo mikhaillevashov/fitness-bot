@@ -1,8 +1,9 @@
-from startFunctions import start, gender, target, height, weight, age, favorite_fruit, favorite_spice, gender_keyboard
-from startFunctions import favorite_meat, favorite_vegetable, favorite_cheese, favorite_grain, main_menu_keyboard
+from startFunctions import start, gender, target, height, weight, age, favorite_fruit
+from startFunctions import favorite_meat, favorite_vegetable, favorite_spice, gender_keyboard
+from startFunctions import favorite_cheese, favorite_grain, main_menu_keyboard, target_keyboard
 from staticData import GENDER, TARGET, AGE, WEIGHT, HEIGHT, CHANGE_MENU, CHANGE_AGE, CHANGE_WEIGHT, CHANGE_HEIGHT
-from staticData import FAVORITE_MEAT, FAVORITE_FRUIT, FAVORITE_CHEESE, FAVORITE_VEGETABLE, CHANGE_GENDER
-from staticData import FAVORITE_SPICE, FAVORITE_GRAIN, VALID_GENDERS, VALID_ANSWERS, POLL_RESPONSE, SUGGEST_FOOD
+from staticData import FAVORITE_MEAT, FAVORITE_FRUIT, FAVORITE_CHEESE, FAVORITE_VEGETABLE, CHANGE_GENDER, VALID_TARGETS
+from staticData import FAVORITE_SPICE, FAVORITE_GRAIN, VALID_GENDERS, VALID_ANSWERS, POLL_RESPONSE, SUGGEST_FOOD, CHANGE_TARGET
 from dbFunctions import get_or_update_user
 
 import requests
@@ -45,7 +46,8 @@ async def poll_response(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 def change_menu_keyboard():
     keyboard = [
-        ['Пол', 'Возраст', 'Вес', 'Рост'],
+        ['Пол', 'Цель'],
+        ['Возраст', 'Вес', 'Рост'],
         ['Назад']
     ]
     return ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -64,6 +66,7 @@ async def get_user_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     data = (
         f"Ваши данные:\n"
         f"Пол: {user_data.get('gender', 'Не указан')}\n"
+        f"Цель: {user_data.get('target', 'Не указана')}\n"
         f"Возраст: {user_data.get('age', 'Не указан')}\n"
         f"Вес: {user_data.get('weight', 'Не указан')} кг\n"
         f"Рост: {user_data.get('height', 'Не указан')} см\n"
@@ -94,6 +97,16 @@ async def handle_change_gender(update: Update, context: ContextTypes.DEFAULT_TYP
     else:
         # Обработка ошибки, если запрос не удался
         await update.message.reply_text('Ошибка при обновлении данных пользователя.')
+
+
+async def handle_change_target(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message.text not in VALID_TARGETS:
+        await update.message.reply_text('Пожалуйста, выберите корректную цель.', reply_markup=target_keyboard())
+        return CHANGE_TARGET
+    else:
+        context.user_data['target'] = update.message.text
+        await update.message.reply_text('Цель успешно обновлена.', reply_markup=change_menu_keyboard())
+        return CHANGE_MENU
 
 
 async def handle_change_age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -203,6 +216,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     elif text == "Пол":
         await handle_change_gender(update, context)
         return CHANGE_GENDER
+    elif text == "Цель":
+        await handle_change_target(update, context)
+        return CHANGE_TARGET
     elif text == "Возраст":
         await handle_change_age(update, context)
         return CHANGE_AGE
@@ -242,6 +258,7 @@ def main() -> None:
             POLL_RESPONSE: [MessageHandler(filters.TEXT & ~filters.COMMAND, poll_response)],
             CHANGE_MENU: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)],
             CHANGE_GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_change_gender)],
+            CHANGE_TARGET: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_change_target)],
             CHANGE_AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_change_age)],
             CHANGE_WEIGHT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_change_weight)],
             CHANGE_HEIGHT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_change_height)]

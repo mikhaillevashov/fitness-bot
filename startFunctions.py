@@ -86,7 +86,7 @@ async def gender(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def target(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text not in VALID_TARGETS:
-        await update.message.reply_text('Пожалуйста, выберите из предложенного.', reply_markup=target_keyboard())
+        await update.message.reply_text('Пожалуйста, выберите корректную цель.', reply_markup=target_keyboard())
         return TARGET
     context.user_data['target'] = update.message.text
     await update.message.reply_text('Сколько вам лет?', reply_markup=ReplyKeyboardRemove())
@@ -220,6 +220,7 @@ async def favorite_grain(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await update.message.reply_text(
         f"Ваши данные:\n"
         f"Пол: {user_data['gender']}\n"
+        f"Цель: {user_data['target']}\n"
         f"Возраст: {user_data['age']}\n"
         f"Вес: {user_data['weight']} кг\n"
         f"Рост: {user_data['height']} см\n"
