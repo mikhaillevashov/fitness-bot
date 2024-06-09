@@ -129,9 +129,9 @@ def like_product(chat_id):
 
 @app.route('/predict_meal/<chat_id>', methods=['GET'])
 def get_predicted_meal(chat_id):
-    predicted_meal = predict_meal(chat_id)
+    predicted_meal, instruction = predict_meal(chat_id)
     if predicted_meal:
-        return jsonify(predicted_meal)
+        return jsonify(predicted_meal, instruction)
     else:
         return jsonify({'error': 'No dishes found'}), 404
 

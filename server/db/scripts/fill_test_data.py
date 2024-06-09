@@ -14,7 +14,7 @@ def get_db_connection():
 
 
 # Чтение данных из Excel файла
-file_path = 'xlsx/dataset.xlsx'
+file_path = '/Users/mikhaillevashov/Desktop/Диплом/fitnessBot/server/db/xlsx/dataset.xlsx'
 data = pd.read_excel(file_path)
 
 # Подключение к базе данных

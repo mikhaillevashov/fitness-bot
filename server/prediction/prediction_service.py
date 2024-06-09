@@ -101,7 +101,6 @@ def predict_products(chat_id):
             label: [product]
         }
         predicted_products.append(predict_product(model, data, label))
-
     return predicted_products
 
 
@@ -117,10 +116,12 @@ def predict_meal(chat_id):
 
     # Get the predicted products
     predicted_products = predict_products(chat_id)
+    predicted_products = [item[0] for item in predicted_products]
+    print(predicted_products)
 
     # Query to find dishes containing all three products
     cur.execute('''
-        SELECT d.id, d.name
+        SELECT d.id, d.name, d.instruction
         FROM dishes d
         JOIN recipe r1 ON d.id = r1.dish_id
         JOIN products p1 ON r1.product_id = p1.id
@@ -136,15 +137,17 @@ def predict_meal(chat_id):
     # If no dishes contain all three products, find dishes containing at least two products
     if not dishes:
         cur.execute('''
-            SELECT d.id, d.name
+            SELECT d.id, d.name, d.instruction
             FROM dishes d
             JOIN recipe r1 ON d.id = r1.dish_id
             JOIN products p1 ON r1.product_id = p1.id
             JOIN recipe r2 ON d.id = r2.dish_id
             JOIN products p2 ON r2.product_id = p2.id
+            JOIN recipe r3 ON d.id = r3.dish_id
+            JOIN products p3 ON r3.product_id = p3.id
             WHERE (p1.name = %s AND p2.name = %s)
-               OR (p1.name = %s AND p2.name = %s)
-               OR (p1.name = %s AND p2.name = %s);
+               OR (p1.name = %s AND p3.name = %s)
+               OR (p2.name = %s AND p3.name = %s);
         ''', (predicted_products[0], predicted_products[1],
               predicted_products[0], predicted_products[2],
               predicted_products[1], predicted_products[2]))
@@ -153,19 +156,23 @@ def predict_meal(chat_id):
     # If no dishes contain at least two products, find dishes containing at least one product
     if not dishes:
         cur.execute('''
-            SELECT d.id, d.name
+            SELECT d.id, d.name, d.instruction
             FROM dishes d
             JOIN recipe r1 ON d.id = r1.dish_id
             JOIN products p1 ON r1.product_id = p1.id
+            JOIN recipe r2 ON d.id = r2.dish_id
+            JOIN products p2 ON r2.product_id = p2.id
+            JOIN recipe r3 ON d.id = r3.dish_id
+            JOIN products p3 ON r3.product_id = p3.id
             WHERE p1.name = %s
-               OR p1.name = %s
-               OR p1.name = %s;
+               OR p2.name = %s
+               OR p3.name = %s;
         ''', (predicted_products[0], predicted_products[1], predicted_products[2]))
         dishes = cur.fetchall()
 
     # If no dishes contain any of the products, select a random dish
     if not dishes:
-        cur.execute('SELECT id, name FROM dishes ORDER BY RANDOM() LIMIT 1;')
+        cur.execute('SELECT id, name, instruction FROM dishes ORDER BY RANDOM() LIMIT 1;')
         dishes = cur.fetchall()
 
     cur.close()
@@ -174,6 +181,6 @@ def predict_meal(chat_id):
     # Randomly select a dish from the filtered list
     if dishes:
         selected_dish = random.choice(dishes)
-        return selected_dish[1]
+        return selected_dish[1], selected_dish[2]
     else:
         return None

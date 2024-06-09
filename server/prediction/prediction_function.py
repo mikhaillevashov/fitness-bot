@@ -20,3 +20,6 @@ def predict_product(model, data, product_label):
     # Раскодирование предсказанного значения
     predicted_product = label_encoder.inverse_transform(prediction)
     print(f'Предсказанный продукт {product_label}: {predicted_product[0]}')
+
+    return predicted_product
+

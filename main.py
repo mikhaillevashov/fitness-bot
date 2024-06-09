@@ -32,8 +32,15 @@ async def suggest_food(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     url = f"http://127.0.0.1:5000/predict_meal/{chat_id}"
     response = requests.get(url)
     meal = response.json()
-    suggestion = (f"Предлагаем вам попробовать блюдо <b>{meal}</b> с парашой. ")
-    await update.message.reply_text(suggestion, reply_markup=feedback_keyboard(), parse_mode='HTML')
+    suggestion = f"Предлагаем вам попробовать блюдо <b>{meal[0]}</b>. "
+    await update.message.reply_text(suggestion, parse_mode='HTML')
+
+    instruction = (f"<b>Инструкиця по готовке:</b>\n{meal[1]}")
+    await update.message.reply_text(instruction, parse_mode='HTML')
+
+    suggestion = f"Вам понравлось блюдо?"
+    await update.message.reply_text(suggestion, reply_markup=feedback_keyboard())
+
     return POLL_RESPONSE
 
 

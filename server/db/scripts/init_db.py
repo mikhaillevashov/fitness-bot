@@ -35,7 +35,8 @@ cur.execute('''
 cur.execute('''
     CREATE TABLE dishes (
         id serial PRIMARY KEY,
-        name varchar(150) NOT NULL
+        name varchar(150) NOT NULL,
+        instruction varchar(1000)
     );
 ''')
 
